@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MISSION HUB - 빅데이터 커리어 미션</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --sky-blue: #87CEEB;
+            --sunset-orange: #FF7F50;
+            --golden-hour: #FFD700;
+            --glass-bg: rgba(0, 0, 0, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Jua', sans-serif;
+            background: #1a1a2e;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* 배경 레이어 (정적 이미지 대신 그라데이션 사용 혹은 원본 배경과 유사하게) */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(255, 215, 0, 0.1), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(135, 206, 235, 0.1), transparent 40%);
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .phase-badge {
+            display: inline-block;
+            padding: 8px 24px;
+            background: linear-gradient(135deg, var(--sky-blue), var(--golden-hour));
+            border-radius: 30px;
+            font-size: 14px;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .title {
+            font-size: clamp(32px, 6vw, 64px);
+            margin-bottom: 15px;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: clamp(18px, 2.5vw, 24px);
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 50px;
+            background: rgba(0, 0, 0, 0.3);
+            display: inline-block;
+            padding: 10px 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+        }
+
+        /* 미션 카드 그리드 */
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .mission-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mission-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .mission-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .mission-icon {
+            font-size: 70px;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .mission-number {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .mission-role {
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* 카드별 포인트 컬러 */
+        .card-1 .mission-number {
+            color: var(--sky-blue);
+        }
+
+        .card-2 .mission-number {
+            color: var(--golden-hour);
+        }
+
+        .card-3 .mission-number {
+            color: var(--sunset-orange);
+        }
+
+        /* 모달 시스템 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            cursor: pointer;
+        }
+
+        .modal-content {
+            background: rgba(20, 20, 35, 0.95);
+            width: 95%;
+            max-width: 1100px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            cursor: default;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            animation: modalSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalSlide {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-side {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .guide-side {
+            background: rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-side {
+            background: transparent;
+            flex: 1.2;
+        }
+
+        .modal-side h3 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .guide-list {
+            list-style: none;
+            font-size: 20px;
+            line-height: 2.2;
+        }
+
+        .guide-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-content {
+            font-size: 22px;
+            line-height: 1.7;
+            color: #eee;
+        }
+
+        .detail-content b {
+            color: white;
+            font-size: 24px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 반응형 스타일 */
+        @media (max-width: 900px) {
+            .modal-content {
+                flex-direction: column;
+                max-height: 85vh;
+                overflow-y: auto;
+            }
+
+            .modal-side {
+                padding: 30px;
+            }
+
+            .guide-side {
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .mission-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 36px;
+            }
+
+            .mission-card {
+                padding: 30px;
+            }
+
+            .modal-side h3 {
+                font-size: 24px;
+            }
+
+            .guide-list {
+                font-size: 18px;
+            }
+
+            .detail-content {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-overlay"></div>
+
+    <div class="container">
+        <span class="phase-badge">Phase 4 · 실제 사례 탐구</span>
+        <h1 class="title">🎯 MISSION Hub</h1>
+        <p class="subtitle">각 캐릭터를 클릭하여 미션 내용을 확인하세요!</p>
+
+        <div class="mission-grid">
+            <!-- 미션 1 -->
+            <div class="mission-card card-1" onclick="showMission(1)">
+                <span class="mission-icon">👔</span>
+                <h3 class="mission-number">미션 1</h3>
+                <p class="mission-role">인사 담당자</p>
+            </div>
+
+            <!-- 미션 2 -->
+            <div class="mission-card card-2" onclick="showMission(2)">
+                <span class="mission-icon">🏛️</span>
+                <h3 class="mission-number">미션 2</h3>
+                <p class="mission-role">정부 담당자</p>
+            </div>
+
+            <!-- 미션 3 -->
+            <div class="mission-card card-3" onclick="showMission(3)">
+                <span class="mission-icon">🎁</span>
+                <h3 class="mission-number">미션 3</h3>
+                <p class="mission-role">기업 마케터</p>
+            </div>
+        </div>
+
+        <footer style="margin-top: 40px; opacity: 0.6; font-size: 16px;">
+            &copy; OURSTORY ALL RIGHTS RESERVED</footer>
+    </div>
+
+    <!-- 모달 -->
+    <div id="mission-modal" class="modal" onclick="closeModal()">
+        <button class="close-btn">&times;</button>
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-side guide-side">
+                <h3 style="color: var(--golden-hour);">📋 미션 가이드</h3>
+                <ul id="guide-list" class="guide-list">
+                    <!-- 가이드 목록 주입 -->
+                </ul>
+            </div>
+            <div class="modal-side detail-side">
+                <h3 id="modal-title" style="color: white;"></h3>
+                <div id="modal-body" class="detail-content">
+                    <!-- 상세 내용 주입 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const missions = {
+            1: {
+                title: "👔 미션 1: 인사 담당자",
+                accent: "#87CEEB",
+                guides: ["📍 담당할 업무 내용", "📍 필요한 능력과 자격증", "📍 월급 및 복지 혜택", "📍 회사 목표와 분위기", "📍 근무 시간과 회사 위치"],
+                content: "📊 <b>우리 반 빅데이터를 분석해서...</b><br><br>• 학생들이 중요하게 생각하는 가치<br>• 학생들이 원하는 근무 환경<br>• 학생들의 강점과 역량 분석<br><br>👉 <b>우리 반 맞춤형 채용 공고</b>를 작성해보세요!"
+            },
+            2: {
+                title: "🏛️ 미션 2: 정부 담당자",
+                accent: "#FFD700",
+                guides: ["📍 지원 받을 수 있는 사람", "📍 구체적인 혜택 내용", "📍 신청 방법 및 준비물", "📍 정책이 필요한 이유", "📍 문의할 곳과 연락처"],
+                content: "📊 <b>우리 반 빅데이터를 분석해서...</b><br><br>• 학생들의 주요 고민과 불안 요소<br>• 학생들이 관심 있는 정책 분야<br>• 학생들에게 필요한 지원 사업<br><br>👉 <b>우리 반을 위한 정책/혜택</b>을 만들어보세요!"
+            },
+            3: {
+                title: "🎁 미션 3: 기업 마케터",
+                accent: "#FF7F50",
+                guides: ["📍 물건을 살 주요 고객", "📍 제품의 핵심 가치", "📍 구매 가격", "📍 가격에 대한 특장점", "📍 구매를 부르는 마무리 멘트 1줄"],
+                content: "📊 <b>우리 반 빅데이터를 분석해서...</b><br><br>• 학생들의 취미와 관심사 패턴<br>• 학생들의 주요 소비 성향<br>• 학생들의 라이프스타일 분석<br><br>👉 <b>우리 반에 딱 맞는 상품</b>을 기획해보세요!"
+            }
+        };
+
+        function showMission(id) {
+            const data = missions[id];
+            const modal = document.getElementById('mission-modal');
+            const title = document.getElementById('modal-title');
+            const body = document.getElementById('modal-body');
+            const guideList = document.getElementById('guide-list');
+
+            title.innerText = data.title;
+            title.style.color = data.accent;
+            body.innerHTML = data.content;
+            guideList.innerHTML = data.guides.map(item => `<li>${item}</li>`).join('');
+
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('mission-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // ESC 키로 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+
+<script>
+    // 1. 키보드 단축키 차단 (F12, Ctrl+Shift+I, Ctrl+U 등)
+    document.addEventListener('keydown', function(event) {
+        if (event.keyCode === 123 || // F12
+           (event.ctrlKey && event.shiftKey && event.keyCode === 73) || // Ctrl+Shift+I
+           (event.ctrlKey && event.shiftKey && event.keyCode === 74) || // Ctrl+Shift+J
+           (event.ctrlKey && event.keyCode === 85)) { // Ctrl+U
+            event.preventDefault();
+            event.returnValue = false;
+        }
+    });
+
+    // 2. 개발자 도구 강제 정지 (무한 디버거 덫)
+    setInterval(function() {
+        var before = new Date().getTime();
+        debugger; 
+        var after = new Date().getTime();
+        if (after - before > 100) {
+            document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:50px;'>보안 정책에 의해 접근이 차단되었습니다.</h1>";
+        }
+    }, 1000);
+</script>
+
+    
+ <script>
+        // 1. 마우스 우클릭 방지 (contextmenu 이벤트 차단)
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+
+        // 추가 팁: 드래그 및 복사도 방지하고 싶다면 아래 주석을 해제하세요.
+        /*
+        // 2. 텍스트 드래그 방지
+        document.addEventListener('selectstart', function(event) {
+            event.preventDefault();
+        });
+
+        // 3. 복사(Ctrl+C) 방지
+        document.addEventListener('copy', function(event) {
+            event.preventDefault();
+        });
+        */
+    </script>
+
+
+
+</body>
+
+</html>
